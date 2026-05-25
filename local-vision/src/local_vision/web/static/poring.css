@@ -1,0 +1,43 @@
+/* The poring sprite + the trigger color-pulse animation.
+   Single source of truth: the M1 UI imports this from /static/poring.css. */
+
+:root {
+  --poring-strip-orange: url("/resources/generated/poring-orange-row2-strip.webp");
+  --poring-strip-green:  url("/resources/generated/poring-green-row2-strip.webp");
+  --poring-frame-w: 240px;
+  --poring-frame-h: 200px;
+  --poring-frames:  8;
+  --poring-cycle:   0.667s;   /* 8 frames at 12 fps */
+}
+
+.poring {
+  width: var(--poring-frame-w);
+  height: var(--poring-frame-h);
+  background-image: var(--poring-strip-orange);
+  background-repeat: no-repeat;
+  background-size: calc(var(--poring-frame-w) * var(--poring-frames))
+                   var(--poring-frame-h);
+  animation: poring-cycle var(--poring-cycle) steps(8) infinite;
+}
+
+/* Negative state: same bounce animation, swap to the green/sad sprite strip. */
+.poring.sad {
+  background-image: var(--poring-strip-green);
+}
+
+@keyframes poring-cycle {
+  from { background-position: 0 0; }
+  to   { background-position: calc(var(--poring-frame-w) * -8) 0; }
+}
+
+/* ===== Trigger fired: color pulses between orange (default) and purple =====
+   The bounce cycle keeps running underneath. */
+.poring.fired {
+  animation:
+    poring-cycle      var(--poring-cycle) steps(8) infinite,
+    poring-color-pulse 0.6s ease-in-out 3;
+}
+@keyframes poring-color-pulse {
+  0%, 100% { filter: none; }
+  50%      { filter: hue-rotate(245deg) saturate(0.7) brightness(0.95); }
+}

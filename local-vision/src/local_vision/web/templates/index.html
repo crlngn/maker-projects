@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Local Vision · observation prototype</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <link rel="stylesheet" href="/static/poring.css">
+</head>
+<body>
+
+<header>
+  <h1>Local Vision</h1>
+  <p class="muted">Phase 1 · observation prototype</p>
+</header>
+
+<main>
+
+  <!-- ============ controls ============ -->
+  <section class="card controls">
+    <div class="mode-toggle" role="tablist">
+      <button id="tab-prepared" class="tab active" data-mode="prepared">Prepared demo</button>
+      <button id="tab-upload"   class="tab"        data-mode="upload">Upload a video</button>
+    </div>
+
+    <form id="prepared-form" class="mode-form active">
+      <p class="muted">Tracked behavior: water consumption at work</p>
+      <button type="submit" class="primary">Start observation</button>
+    </form>
+
+    <form id="upload-form" class="mode-form">
+      <label>
+        Observation question
+        <input name="observation" type="text" required
+               placeholder="e.g. Is the person sitting at the desk?">
+      </label>
+      <div class="row">
+        <label class="grow">
+          Video file
+          <input name="video" type="file" accept="video/*" required>
+        </label>
+        <label>
+          Sample rate (Hz)
+          <input name="sample_hz" type="number" min="0.2" max="2" step="0.1" value="1">
+        </label>
+      </div>
+      <div class="row">
+        <label>
+          Trigger mode
+          <select name="trigger_mode">
+            <option value="sustained" selected>Sustained ≥ N s</option>
+            <option value="instant">Instant</option>
+          </select>
+        </label>
+        <label>
+          Min duration (s)
+          <input name="min_duration_sec" type="number" min="0" max="60" step="0.5" value="1.5">
+        </label>
+      </div>
+      <button type="submit" class="primary">Start observing</button>
+    </form>
+
+    <div id="active-status" class="active-status hidden">
+      <span id="active-text"></span>
+      <button id="stop-btn" class="secondary">Stop</button>
+    </div>
+  </section>
+
+  <!-- ============ live preview + status + poring ============ -->
+  <section class="card live">
+    <div class="preview-pane">
+      <img id="preview-img" alt="latest sampled frame">
+      <div id="preview-placeholder" class="placeholder">
+        live preview will appear here once a run starts
+      </div>
+    </div>
+    <aside class="signal-pane">
+      <div id="poring" class="poring"></div>
+      <div id="status-line" class="status">idle</div>
+      <div id="progress-line" class="muted small"></div>
+      <div class="fire-counter">
+        <span id="fire-count" class="count">0</span>
+        <span class="label">trigger fires</span>
+      </div>
+    </aside>
+  </section>
+
+  <!-- ============ event log ============ -->
+  <section class="card events">
+    <h2>Trigger events</h2>
+    <table id="events-table">
+      <thead>
+        <tr><th>#</th><th>Virtual time</th><th>Reason</th></tr>
+      </thead>
+      <tbody id="events-tbody">
+        <tr class="empty"><td colspan="3" class="muted">(no events yet)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ how it is built ============ -->
+  <section class="card how-built">
+    <h2>How it is built</h2>
+    <p>A small Python service that watches a video stream and asks a local vision-language model a yes/no question about each sampled frame. No cloud APIs — everything runs on the machine.</p>
+    <p><strong>Model.</strong> Gemma 4 (E2B-it) served by a local <a href="https://ollama.com">Ollama</a> instance. For each sample we send one JPEG frame plus a templated prompt asking for <code>yes</code>/<code>no</code> followed by a one-sentence reason.</p>
+    <p><strong>Sampling.</strong> Frames are pulled from the source at a fixed rate (≈1 Hz). Anything between sample points is skipped — inference only runs on the chosen frames, so the model's cost is bounded regardless of source FPS.</p>
+    <p><strong>State machine.</strong> A trigger evaluator turns the stream of yes/no answers into events. It tracks the current "true-episode" — an unbroken run of yes-frames. In <em>sustained</em> mode it fires once the episode has lasted ≥ N seconds; in <em>instant</em> mode it fires on the first yes. Either way it re-arms only when the answer flips back to no, so one continuous episode produces at most one event.</p>
+  </section>
+
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

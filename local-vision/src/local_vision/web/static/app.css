@@ -1,0 +1,198 @@
+/* Local Vision — page styles (matches carolx.me design tokens) */
+
+:root {
+  --accent: rgb(140, 119, 167);
+  --accent-light: rgba(140, 119, 167, 0.1);
+  --clear:  #f5f5f3;
+  --dark:   #2a2a2a;
+  --border: #e5e5e3;
+  --muted:  #888;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--dark);
+  background: var(--clear);
+  padding: 2rem;
+  min-height: 100dvh;
+}
+
+header { max-width: 1100px; margin: 0 auto 1.5rem; }
+header h1 {
+  font-family: 'Raleway', 'Helvetica Neue', sans-serif;
+  font-weight: 400;
+  font-size: 2.2rem;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+header p { color: var(--muted); }
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+main > .controls  { grid-column: 1 / -1; }
+main > .live      { grid-column: 1 / -1; }
+main > .events    { grid-column: 1 / -1; }
+main > .how-built { grid-column: 1 / -1; }
+
+.card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem;
+}
+
+h2 {
+  font-family: 'Raleway', 'Helvetica Neue', sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--dark);
+}
+
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+.hidden { display: none !important; }
+code { background: var(--accent-light); padding: 1px 4px; border-radius: 3px; font-size: 0.9em; }
+
+/* ===== controls ===== */
+.mode-toggle { display: flex; gap: 0; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
+.tab {
+  background: none; border: none; cursor: pointer;
+  padding: 0.6rem 1rem; font-family: inherit; font-size: 0.9rem; color: var(--muted);
+  border-bottom: 2px solid transparent;
+  transition: color 150ms, border-color 150ms;
+}
+.tab:hover { color: var(--dark); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.mode-form { display: none; flex-direction: column; gap: 0.75rem; }
+.mode-form.active { display: flex; }
+
+.mode-form label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: var(--muted); }
+.mode-form .grow { flex: 1; }
+.mode-form .row { display: flex; gap: 0.75rem; }
+.mode-form input[type=text],
+.mode-form input[type=number],
+.mode-form input[type=file],
+.mode-form select {
+  font: inherit; padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--clear); color: var(--dark);
+}
+.mode-form input:focus, .mode-form select:focus {
+  outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent);
+}
+
+button.primary, button.secondary {
+  font: inherit; padding: 0.55rem 1.1rem; border: none; border-radius: 4px;
+  cursor: pointer; align-self: flex-start;
+}
+button.primary { background: var(--accent); color: white; }
+button.secondary { background: var(--dark); color: white; }
+button.primary:hover, button.secondary:hover { opacity: 0.88; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.active-status {
+  margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 1rem;
+}
+
+/* ===== live preview + signal =====
+   Both columns get fixed widths so the layout stays stable regardless of
+   varying reason-text length or image dimensions. The preview pane locks
+   to a 16:9 aspect ratio; the signal pane is the poring's own width.
+   `align-items: stretch` lets the signal pane match the preview's height so
+   the fire counter can pin to the bottom of the column. */
+.live {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+.preview-pane {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--clear);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+/* Lock the image to the pane's box; it'll be letterboxed if AR differs. */
+.preview-pane img {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  display: none;
+}
+.preview-pane img.loaded { display: block; }
+.placeholder { color: var(--muted); font-size: 0.85rem; text-align: center; padding: 1rem; }
+
+.signal-pane {
+  width: 280px;                     /* fixed — doesn't grow with reason text */
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+}
+.signal-pane .status {
+  font-family: 'Raleway', sans-serif; text-transform: uppercase; letter-spacing: -0.01em;
+  font-size: 1rem; text-align: center;
+}
+.signal-pane .small {
+  width: 100%;
+  text-align: center;
+  /* Reserve a couple of lines so layout doesn't jump when reason text wraps. */
+  min-height: 2.6em;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Fire counter — pinned to the bottom of the signal column */
+.fire-counter {
+  margin-top: auto;                /* push to bottom in the flex column */
+  padding-top: 1rem;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+  border-top: 1px solid var(--border);
+  width: 100%;
+}
+.fire-counter .count {
+  font-family: 'Raleway', 'Helvetica Neue', sans-serif;
+  font-weight: 400;
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--accent);
+}
+.fire-counter .label {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ===== how it is built ===== */
+.how-built p + p { margin-top: 0.6rem; }
+.how-built a { color: var(--accent); }
+
+/* ===== event log ===== */
+.events table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.events th, .events td { padding: 0.5rem 0.6rem; text-align: left; border-bottom: 1px solid var(--border); }
+.events th { font-weight: 500; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: -0.005em; }
+.events td.empty { color: var(--muted); font-style: italic; }
+.events tr:last-child td { border-bottom: none; }
+
+@media (max-width: 720px) {
+  .live { grid-template-columns: 1fr; }
+  .signal-pane { min-width: 0; }
+}
